@@ -31,7 +31,7 @@
             opacity: 0;
             transform: translateY(20px);
             animation: fadeInUp 1s forwards;
-            transition: height 0.3s ease;
+            transition: height 0.3s ease, opacity 0.3s ease;
         }
         .container.same-height {
             display: flex;
@@ -109,6 +109,10 @@
         .highlight-red {
             color: red;
         }
+        .loading {
+            display: none;
+            margin-top: 10px;
+        }
         @keyframes fadeInUp {
             to {
                 opacity: 1;
@@ -119,6 +123,15 @@
             to {
                 opacity: 1;
             }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+        .hidden {
+            display: none;
         }
         @media (max-width: 600px) {
             .container {
@@ -175,36 +188,19 @@
             <label for="monthlySalary" title="Din månadslön efter frånvaro" aria-label="Din månadslön efter frånvaro">Månadslön:</label>
             <input type="number" id="monthlySalary" required readonly>
             
-            <button type="button" onclick="calculateProvision()">Beräkna</button>
+            <button type="button" onclick="startCalculation()">Beräkna</button>
         </form>
-        <div class="result" id="result"></div>
+        <div class="loading" id="loading">Beräknar...</div>
     </div>
 
-    <div class="container" id="audioContainer">
-        <h1>Musikspelare</h1>
-        <iframe id="sc-widget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bananaman90014/george-formby-when-im-cleaning-windows&color=%230066cc&auto_play=true"></iframe>
-        <div id="playerControls">
-            <button type="button" onclick="playAudio()">Play</button>
-            <button type="button" onclick="pauseAudio()">Paus</button>
-        </div>
+    <div class="container hidden" id="resultContainer">
+        <h1>Resultat</h1>
+        <div class="result" id="result"></div>
+        <div class="info" id="info"></div>
+        <div class="motivation" id="motivation"></div>
     </div>
 
     <script>
-        const widgetIframe = document.getElementById('sc-widget');
-        const widget = SC.Widget(widgetIframe);
-
-        widget.bind(SC.Widget.Events.READY, function() {
-            widget.play();
-        });
-
-        function playAudio() {
-            widget.play();
-        }
-
-        function pauseAudio() {
-            widget.pause();
-        }
-
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
         }
@@ -318,6 +314,25 @@
             }
         }
 
+        function startCalculation() {
+            if (!validateForm()) {
+                return;
+            }
+
+            // Visa laddningsikon
+            document.getElementById('loading').style.display = 'block';
+
+            // Spela upp ljud
+            const audio = new Audio('https://freesound.org/data/previews/242/242138_2193266-lq.mp3');
+            audio.play();
+
+            // Vänta 6,5 sekunder och kör calculateProvision
+            setTimeout(() => {
+                calculateProvision();
+                document.getElementById('loading').style.display = 'none';
+            }, 6500);
+        }
+
         function calculateProvision() {
             if (!validateForm()) {
                 return;
@@ -334,6 +349,18 @@
                 const remainingRevenue = revenue - intermediateResult;
                 const provision = remainingRevenue * multiplier;
                 const totalIncome = parseFloat(monthlySalary) + provision;
+
+                // Hide forms and show results
+                document.getElementById('leaveContainer').classList.add('hidden');
+                document.getElementById('provisionContainer').classList.add('hidden');
+                document.getElementById('resultContainer').classList.remove('hidden');
+
+                // Calculate stats
+                const averageDailyEarnings = totalIncome / daysWorked;
+                const averageHourlyEarnings = averageDailyEarnings / 8;
+                const totalItems = Math.round(revenue / 780);
+                const itemsRangeMin = Math.floor(totalItems / 10) * 10;
+                const itemsRangeMax = itemsRangeMin + 49;
 
                 document.getElementById('result').innerHTML = `Din provision är: ${formatNumber(Math.round(provision))} kr<br>Din totala inkomst med månadslön är: ${formatNumber(Math.round(totalIncome))} kr`;
                 document.getElementById('result').style.opacity = 0;
@@ -359,12 +386,10 @@
                     document.getElementById('motivation').innerText = '';
                 }
 
-                const averageDailyEarnings = totalIncome / daysWorked;
-                const averageHourlyEarnings = averageDailyEarnings / 8;
-
                 document.getElementById('info').innerHTML = `
                     Snittlön per dag: ${formatNumber(Math.round(averageDailyEarnings))} kr<br>
-                    Snittlön per timme: ${formatNumber(Math.round(averageHourlyEarnings))} kr
+                    Snittlön per timme: ${formatNumber(Math.round(averageHourlyEarnings))} kr<br>
+                    Antal objekt per månad: ${itemsRangeMin}-${itemsRangeMax}
                 `;
                 document.getElementById('info').style.opacity = 0;
                 setTimeout(() => {
