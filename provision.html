@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provision Uträkning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url('https://cdn.pixabay.com/photo/2018/01/06/16/35/window-3065345_1280.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #00796b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            padding: 10px;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            max-width: 350px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s forwards;
+            transition: height 0.3s ease;
+        }
+        .container.same-height {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        h1 {
+            color: #00796b;
+            font-size: 18px;
+            margin: 5px 0;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        input, select {
+            width: calc(100% - 20px);
+            padding: 5px;
+            margin: 5px 0;
+            border: 1px solid #b2dfdb;
+            border-radius: 5px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            border-color: #004d40;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #00796b;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            margin-top: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #004d40;
+            transform: translateY(-2px);
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+        }
+        .result, .info {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #004d40;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        .motivation {
+            margin-top: 5px;
+            font-size: 0.8em;
+            color: #00796b;
+            font-style: italic;
+        }
+        .section-divider {
+            border-top: 1px solid #b2dfdb;
+            margin: 10px 0;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .highlight-green {
+            color: green;
+        }
+        .highlight-red {
+            color: red;
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 5px;
+                width: 100%;
+            }
+            h1 {
+                font-size: 16px;
+            }
+            button {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+            .button-group {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container same-height" id="leaveContainer">
+        <h1>Beräkna lön efter sjukfrånvaro eller VAB</h1>
+        <form id="leaveForm">
+            <label for="salary" aria-label="Ange din månadslön före frånvaro">Månadslön:</label>
+            <input type="number" id="salary" required>
+            
+            <label for="leaveDays" title="Ange antalet frånvarodagar">Antal dagar:</label>
+            <input type="number" id="leaveDays" required>
+            
+            <label for="leaveType" title="Välj typ av frånvaro">Typ av frånvaro:</label>
+            <select id="leaveType" required>
+                <option value="sick">Sjukdag</option>
+                <option value="vab">VAB</option>
+            </select>
+            
+            <div class="button-group">
+                <button type="button" onclick="calculateLeave()">Beräkna</button>
+                <button type="button" onclick="noLeave()">Ingen frånvaro</button>
+            </div>
+        </form>
+        <div class="result" id="leaveResult"></div>
+    </div>
+
+    <div class="container same-height" id="provisionContainer">
+        <h1>Beräkna din provision</h1>
+        <form id="provisionForm">
+            <label for="daysWorked" title="Ange antalet dagar du har arbetat">Antal dagar arbetat (inkl. röda dagar):</label>
+            <input type="number" id="daysWorked" required>
+            
+            <label for="revenue" title="Ange din totala omsättning">Omsättningsbelopp:</label>
+            <input type="number" id="revenue" required>
+            
+            <label for="monthlySalary" title="Din månadslön efter frånvaro" aria-label="Din månadslön efter frånvaro">Månadslön:</label>
+            <input type="number" id="monthlySalary" required readonly>
+            
+            <button type="button" onclick="calculateProvision()">Beräkna</button>
+        </form>
+        <div class="result" id="result"></div>
+    </div>
+
+    <div class="container" id="audioContainer">
+        <h1>Musikspelare</h1>
+        <iframe id="sc-widget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/bananaman90014/george-formby-when-im-cleaning-windows&color=%230066cc&auto_play=true"></iframe>
+        <div id="playerControls">
+            <button type="button" onclick="playAudio()">Play</button>
+            <button type="button" onclick="pauseAudio()">Paus</button>
+        </div>
+    </div>
+
+    <script>
+        const widgetIframe = document.getElementById('sc-widget');
+        const widget = SC.Widget(widgetIframe);
+
+        widget.bind(SC.Widget.Events.READY, function() {
+            widget.play();
+        });
+
+        function playAudio() {
+            widget.play();
+        }
+
+        function pauseAudio() {
+            widget.pause();
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').prepend(errorDiv);
+
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function validateForm() {
+            const salary = document.getElementById('salary').value;
+            const leaveDays = document.getElementById('leaveDays').value;
+            const daysWorked = document.getElementById('daysWorked').value;
+            const revenue = document.getElementById('revenue').value;
+
+            if (salary <= 0 || leaveDays < 0 || daysWorked < 0 || revenue < 0) {
+                showError('Vänligen fyll i alla fält med giltiga värden.');
+                return false;
+            }
+            return true;
+        }
+
+        function saveData() {
+            localStorage.setItem('salary', document.getElementById('salary').value);
+            localStorage.setItem('leaveDays', document.getElementById('leaveDays').value);
+            localStorage.setItem('leaveType', document.getElementById('leaveType').value);
+        }
+
+        function loadData() {
+            document.getElementById('salary').value = localStorage.getItem('salary') || '';
+            document.getElementById('leaveDays').value = localStorage.getItem('leaveDays') || '';
+            document.getElementById('leaveType').value = localStorage.getItem('leaveType') || 'sick';
+        }
+
+        function calculateLeave() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const salary = document.getElementById('salary').value;
+            const leaveDays = document.getElementById('leaveDays').value;
+            const leaveType = document.getElementById('leaveType').value;
+
+            if (salary > 0 && leaveDays >= 0) {
+                // Räkna ut dagslönen
+                const dailySalary = salary / 21;
+
+                let salaryAfterLeave;
+
+                if (leaveType === 'sick') {
+                    // Karensdagens avdrag
+                    const firstDayDeduction = dailySalary;
+
+                    // Räkna ut avdrag för återstående sjukdagar (80% av dagslönen)
+                    const remainingDaysDeduction = dailySalary * (leaveDays - 1);
+                    const addBack = (dailySalary * 0.8) * (leaveDays - 1);
+
+                    // Räkna ut månadslön efter avdrag vid sjukfrånvaro
+                    salaryAfterLeave = salary - firstDayDeduction - remainingDaysDeduction + addBack;
+                } else {
+                    // VAB avdrag
+                    salaryAfterLeave = salary - (dailySalary * leaveDays);
+                }
+
+                // Visa resultatet
+                const dailySalaryText = "Värde på en arbetsdag: " + Math.round(dailySalary) + " kr<br>";
+                const leaveDayValueText = leaveType === 'sick' ? "Värde på en sjukdag: " + Math.round(dailySalary * 0.8) + " kr<br>" : "Värde på en VAB-dag: " + Math.round(dailySalary) + " kr<br>";
+                const finalSalaryText = "Slutgiltig lön efter avdrag: " + Math.round(salaryAfterLeave) + " kr";
+                document.getElementById('leaveResult').innerHTML = finalSalaryText + "<br>" + dailySalaryText + leaveDayValueText;
+                document.getElementById('leaveResult').style.opacity = 0;
+                setTimeout(() => {
+                    document.getElementById('leaveResult').style.opacity = 1;
+                }, 0);
+
+                // Uppdatera månadslön fältet i provision form
+                const monthlySalaryField = document.getElementById('monthlySalary');
+                monthlySalaryField.value = Math.round(salaryAfterLeave);
+                if (Math.round(salaryAfterLeave) < salary) {
+                    monthlySalaryField.classList.remove('highlight-green');
+                    monthlySalaryField.classList.add('highlight-red');
+                } else {
+                    monthlySalaryField.classList.remove('highlight-red');
+                    monthlySalaryField.classList.add('highlight-green');
+                }
+                saveData();
+            } else {
+                showError('Vänligen fyll i alla fält med giltiga värden.');
+            }
+        }
+
+        function noLeave() {
+            const salary = document.getElementById('salary').value;
+            if (salary > 0) {
+                const monthlySalaryField = document.getElementById('monthlySalary');
+                monthlySalaryField.value = Math.round(salary);
+                monthlySalaryField.classList.remove('highlight-red');
+                monthlySalaryField.classList.add('highlight-green');
+                document.getElementById('leaveResult').innerHTML = "Ingen frånvaro. Månadslön: " + Math.round(salary) + " kr";
+                document.getElementById('leaveResult').style.opacity = 0;
+                setTimeout(() => {
+                    document.getElementById('leaveResult').style.opacity = 1;
+                }, 0);
+            } else {
+                showError('Vänligen fyll i alla fält med giltiga värden.');
+            }
+        }
+
+        function calculateProvision() {
+            if (!validateForm()) {
+                return;
+            }
+
+            const daysWorked = document.getElementById('daysWorked').value;
+            const revenue = document.getElementById('revenue').value;
+            const monthlySalary = document.getElementById('monthlySalary').value;
+            const dailyRate = 7816;
+            const multiplier = 0.17;
+
+            if (daysWorked > 0 && revenue > 0 && monthlySalary > 0) {
+                const intermediateResult = daysWorked * dailyRate;
+                const remainingRevenue = revenue - intermediateResult;
+                const provision = remainingRevenue * multiplier;
+                const totalIncome = parseFloat(monthlySalary) + provision;
+
+                document.getElementById('result').innerHTML = `Din provision är: ${formatNumber(Math.round(provision))} kr<br>Din totala inkomst med månadslön är: ${formatNumber(Math.round(totalIncome))} kr`;
+                document.getElementById('result').style.opacity = 0;
+                setTimeout(() => {
+                    document.getElementById('result').style.opacity = 1;
+                }, 0);
+
+                if (totalIncome > 26000) {
+                    const messages = [
+                        "Bra jobbat! Denna månaden har du tjänat mer än månadslönen!",
+                        "Fantastiskt! Du har överträffat månadslönen denna månaden!",
+                        "Imponerande! Du har tjänat mer än månadslönen denna månaden!",
+                        "Utmärkt arbete! Din inkomst denna månaden är över månadslönen!",
+                        "Strålande! Du har nått en ny höjd i din månadsinkomst!"
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    document.getElementById('motivation').innerText = randomMessage;
+                    document.getElementById('motivation').style.opacity = 0;
+                    setTimeout(() => {
+                        document.getElementById('motivation').style.opacity = 1;
+                    }, 0);
+                } else {
+                    document.getElementById('motivation').innerText = '';
+                }
+
+                const averageDailyEarnings = totalIncome / daysWorked;
+                const averageHourlyEarnings = averageDailyEarnings / 8;
+
+                document.getElementById('info').innerHTML = `
+                    Snittlön per dag: ${formatNumber(Math.round(averageDailyEarnings))} kr<br>
+                    Snittlön per timme: ${formatNumber(Math.round(averageHourlyEarnings))} kr
+                `;
+                document.getElementById('info').style.opacity = 0;
+                setTimeout(() => {
+                    document.getElementById('info').style.opacity = 1;
+                }, 0);
+            } else {
+                showError('Vänligen fyll i alla fält med giltiga värden.');
+                document.getElementById('motivation').innerText = '';
+            }
+        }
+
+        // Ladda data vid sidladdning
+        window.onload = loadData;
+    </script>
+</body>
+</html>
