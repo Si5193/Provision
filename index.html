@@ -323,14 +323,14 @@
             document.getElementById('loading').style.display = 'block';
 
             // Spela upp ljud
-            const audio = new Audio('https://freesound.org/data/previews/242/242138_2193266-lq.mp3');
+            const audio = new Audio('https://www.soundsnap.com/industry_cash_register_open_drawer_ding_antique_01');
             audio.play();
 
-            // Vänta 6,5 sekunder och kör calculateProvision
+            // Vänta 5 sekunder och kör calculateProvision
             setTimeout(() => {
                 calculateProvision();
                 document.getElementById('loading').style.display = 'none';
-            }, 6500);
+            }, 5000);
         }
 
         function calculateProvision() {
