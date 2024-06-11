@@ -22,8 +22,6 @@
             height: auto;
             z-index: -1;
             transform: translate(-50%, -50%);
-            background: url('https://cdn.pixabay.com/photo/2018/01/06/16/35/window-3065345_1280.jpg') no-repeat;
-            background-size: cover;
         }
         .container {
             background-color: rgba(255, 255, 255, 0.8);
@@ -154,7 +152,6 @@
 </head>
 <body>
     <video id="bg-video" autoplay muted loop playsinline class="bg-video">
-        <source src="https://videos.pexels.com/video-files/4513080/4513080-hd_1366_720_24fps.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
@@ -184,7 +181,7 @@
     <div class="container hidden" id="provisionContainer">
         <h1>Beräkna din provision</h1>
         <form id="provisionForm">
-            <label for="daysWorked" title="Ange antalet dagar med sä">Antal nkt provisionsgräns (inkl. röda dagar/sjukdagar/Vab):</label>
+            <label for="daysWorked" title="Ange antalet arbetsdagar för månaden">Antal dagar (inkl. röda dagar,sjukdagar,vab):</label>
             <input type="number" id="daysWorked" required>
             
             <label for="revenue" title="Ange din totala omsättning">Omsättningsbelopp:</label>
@@ -206,8 +203,18 @@
     </div>
 
     <script>
+        const videos = [
+            'https://videos.pexels.com/video-files/2450251/2450251-hd_1280_720_30fps.mp4',
+            'https://videos.pexels.com/video-files/2569168/2569168-hd_1280_720_24fps.mp4',
+            'https://videos.pexels.com/video-files/20233744/20233744-hd_1280_720_30fps.mp4',
+            'https://videos.pexels.com/video-files/20218339/20218339-hd_1280_720_25fps.mp4',
+            'https://videos.pexels.com/video-files/3752545/3752545-hd_1280_720_24fps.mp4'
+        ];
+
         document.addEventListener('DOMContentLoaded', (event) => {
             const video = document.getElementById('bg-video');
+            const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+            video.setAttribute('src', randomVideo);
             video.setAttribute('playsinline', '');
             video.muted = true;
             video.play();
