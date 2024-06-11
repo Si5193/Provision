@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Provision Uträkning</title>
+    <title>Provision Uträkning med Lottie Laddningsanimation</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body, html {
@@ -23,6 +23,19 @@
             z-index: -1;
             transform: translate(-50%, -50%);
         }
+        .loading-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+        }
         .container {
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
@@ -36,17 +49,20 @@
             transform: translateY(20px);
             animation: fadeInUp 1s forwards;
         }
+
         h1 {
             color: #00796b;
             font-size: 24px;
             margin-bottom: 20px;
         }
+
         label {
             display: block;
             margin: 10px 0;
             font-weight: bold;
             font-size: 14px;
         }
+
         input, select {
             width: calc(100% - 20px);
             padding: 10px;
@@ -56,10 +72,12 @@
             font-size: 14px;
             transition: all 0.3s ease;
         }
+
         input:focus, select:focus {
             border-color: #004d40;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
+
         button {
             background-color: #00796b;
             color: #ffffff;
@@ -71,15 +89,18 @@
             font-size: 14px;
             transition: all 0.3s ease;
         }
+
         button:hover {
             background-color: #004d40;
             transform: translateY(-2px);
         }
+
         .button-group {
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
         }
+
         .result, .info, .weather {
             margin-top: 10px;
             font-size: 14px;
@@ -87,62 +108,71 @@
             opacity: 0;
             animation: fadeIn 0.5s forwards;
         }
+
         .motivation {
             margin-top: 10px;
             font-size: 14px;
             color: #00796b;
             font-style: italic;
         }
+
         .section-divider {
             border-top: 1px solid #b2dfdb;
             margin: 20px 0;
         }
+
         .error {
             color: red;
             font-weight: bold;
         }
+
         .highlight-green {
             color: green;
         }
+
         .highlight-red {
             color: red;
         }
-        .loading {
-            display: none;
-            margin-top: 10px;
-        }
+
         .hidden {
             display: none;
         }
+
         @keyframes fadeInUp {
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
         @keyframes fadeIn {
             to {
                 opacity: 1;
             }
         }
+
         @keyframes fadeOut {
             to {
                 opacity: 0;
                 transform: translateY(20px);
             }
         }
+
         @media (max-width: 600px) {
             .container {
                 padding: 10px;
                 width: 100%;
             }
+
             h1 {
                 font-size: 20px;
             }
+
             button {
                 padding: 8px 16px;
                 font-size: 12px;
             }
+
             .button-group {
                 flex-direction: column;
                 gap: 10px;
@@ -155,21 +185,25 @@
         Your browser does not support the video tag.
     </video>
 
+    <div class="loading-container" id="loading-container">
+        <dotlottie-player src="https://lottie.host/925fffcd-77b4-42aa-b423-a57c32e800bf/hBb6pUIMQA.json" background="transparent" speed="1" style="width: 300px; height: 300px;" loop autoplay></dotlottie-player>
+    </div>
+
     <div class="container" id="leaveContainer">
         <h1>Beräkna lön efter sjukfrånvaro eller VAB</h1>
         <form id="leaveForm">
             <label for="salary" aria-label="Ange din månadslön före frånvaro">Månadslön:</label>
             <input type="number" id="salary" required>
-            
+
             <label for="leaveDays" title="Ange antalet frånvarodagar">Antal dagar:</label>
             <input type="number" id="leaveDays" required>
-            
+
             <label for="leaveType" title="Välj typ av frånvaro">Typ av frånvaro:</label>
             <select id="leaveType" required>
                 <option value="sick">Sjukdag</option>
                 <option value="vab">VAB</option>
             </select>
-            
+
             <div class="button-group">
                 <button type="button" onclick="calculateLeave()">Beräkna</button>
                 <button type="button" onclick="noLeave()">Ingen frånvaro</button>
@@ -181,18 +215,17 @@
     <div class="container hidden" id="provisionContainer">
         <h1>Beräkna din provision</h1>
         <form id="provisionForm">
-            <label for="daysWorked" title="Ange antalet arbetsdagar för månaden">Antal dagar (inkl. röda dagar,sjukdagar,vab):</label>
+            <label for="daysWorked" title="Ange antalet dagar du har arbetat">Antal dagar arbetat (inkl. röda dagar):</label>
             <input type="number" id="daysWorked" required>
-            
+
             <label for="revenue" title="Ange din totala omsättning">Omsättningsbelopp:</label>
             <input type="number" id="revenue" required>
-            
+
             <label for="monthlySalary" title="Din månadslön efter frånvaro" aria-label="Din månadslön efter frånvaro">Månadslön:</label>
             <input type="number" id="monthlySalary" required readonly>
-            
+
             <button type="button" onclick="startCalculation()">Beräkna</button>
         </form>
-        <div class="loading" id="loading">Beräknar...</div>
     </div>
 
     <div class="container hidden" id="resultContainer">
@@ -201,6 +234,8 @@
         <div class="info" id="info"></div>
         <div class="motivation" id="motivation"></div>
     </div>
+
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
     <script>
         const videos = [
@@ -346,18 +381,15 @@
                 return;
             }
 
-            // Visa laddningsikon
-            document.getElementById('loading').style.display = 'block';
+            // Visa laddningsanimation
+            const loadingContainer = document.getElementById('loading-container');
+            loadingContainer.style.visibility = 'visible';
 
-            // Spela upp ljud
-            const audio = new Audio('https://www.soundsnap.com/industry_cash_register_open_drawer_ding_antique_01');
-            audio.play();
-
-            // Vänta 5 sekunder och kör calculateProvision
+            // Vänta 3 sekunder och kör calculateProvision
             setTimeout(() => {
                 calculateProvision();
-                document.getElementById('loading').style.display = 'none';
-            }, 1100);
+                loadingContainer.style.visibility = 'hidden';
+            }, 3000);
         }
 
         function calculateProvision() {
